@@ -1,0 +1,51 @@
+name: Refresh after the Treasury close
+
+on:
+  schedule:
+    - cron: "40 22 * * 1-5"   # 6:40 PM EDT / 5:40 PM EST, after Treasury posts the day's curves
+    - cron: "15 1 * * 2-6"    # 9:15 PM EDT / 8:15 PM EST, catches a late post
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pull the newest close
+        id: pull
+        run: |
+          set +e
+          python refresh/refresh.py data/ladder_data.json /tmp/new.json
+          code=$?
+          set -e
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" = "3" ]; then echo "Nothing newer than what is published."; exit 0; fi
+          exit $code
+      - name: Rebuild the CSVs and both pages
+        if: steps.pull.outputs.code == '0'
+        run: |
+          cp /tmp/new.json data/ladder_data.json
+          python refresh/to_csvs.py data/ladder_data.json data
+          python refresh/render.py data/ladder_data.json \
+            refresh/templates/index.tpl.html index.html \
+            refresh/templates/omni.tpl.html ladder-omni-app.html
+      - name: Commit
+        if: steps.pull.outputs.code == '0'
+        run: |
+          git config user.name "ladder-refresh"
+          git config user.email "ladder-refresh@users.noreply.github.com"
+          git add data index.html ladder-omni-app.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Treasury close $(python -c 'import json;print(json.load(open("data/ladder_data.json"))["facts"]["asof"])')"
+          git push
