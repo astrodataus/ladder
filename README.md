@@ -6,7 +6,7 @@ list and turns it into a plan: what bonds pay, what a year of income costs, your
 essentials you can lock with a TIPS ladder, how the plan held up in every start year since
 1928, and the moves that close each gap.
 
-**Live site:** https://astrodataus.github.io/ladder/
+**Live site:** https://ladder.astrodata.us
 
 Built by [Astrodata](https://astrodata.us). The same document also runs as an Omni app; this
 repository is the static build of it, plus the market data it reads.
