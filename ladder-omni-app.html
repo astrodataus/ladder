@@ -642,7 +642,7 @@ function renderPrice() {
   const W = SW(), narrow = W < 620;
   const m = D.rm[st.scrub][0], isNow = st.scrub === D.rm.length - 1;
   const rc = rcForMonth(m), cost = ladderCost(rc), costNow = ladderCost(RC_NOW);
-  const pnl = panel(`What $1,000 of future income costs, ${isNow ? "today" : "in " + monthName(m, true)}`, `Each column is the price of $1,000 of spending power paid in a future year, bought with Treasury bonds that adjust for inflation. Below the $1,000 line, the market pays you to wait. Above it, you pay the market.${isNow ? "" : " Outlines show today’s prices."}`);
+  const pnl = panel(`What $1,000 of future income costs, ${isNow ? "today" : "in " + monthName(m, true)}`, `Each column is the price of $1,000 of spending power paid in a future year, bought with Treasury bonds that adjust for inflation. A column below the $1,000 line costs less than the income it buys. Above the line, it costs more.${isNow ? "" : " Outlines show today’s prices."}`);
   const Hh = narrow ? 300 : 360, ml = 52, mr = 12, top = 42, bottom = 30;
   const svg = svgBox(pnl, W, Hh, "Price today of $1,000 of real income in each of the next 30 years");
   const maxY = 1400, sy = v => Hh - bottom - v / maxY * (Hh - top - bottom);
@@ -697,7 +697,7 @@ function guidePrice() {
   const p30 = 1000 * df(RC_NOW, 30), p30min = 1000 * df(RC_MIN, 30);
   return `
   <p class="lead">Today, $1,000 of spending power 30 years from now costs <b>${money(p30)}</b>. In ${dateMY(F.real10_min_date)} it cost <b>${money(p30min)}</b>.</p>
-  <p>This is the whole idea behind Ladder. The yield curve is a price list for future years. Buy a Treasury that matures in a given year and you have bought that year’s income, whatever stocks do in between. Buy one for each year and you have a <b>ladder</b>.</p>
+  <p>The yield curve is a price list for future years. Buy a Treasury that matures in a given year and you have bought that year’s income, whatever stocks do in between. Buy one for each year and you have a <b>ladder</b>.</p>
   <ul class="facts">
     <li><span>30 years of $1,000, priced ${isNow ? "today" : "in " + monthName(m)}</span><span>${money(c, { round: 10 })}</span></li>
     ${isNow ? "" : `<li><span>Same 30 years, priced today</span><span>${money(c0, { round: 10 })}</span></li>`}
@@ -781,8 +781,8 @@ function renderGoals() {
   const g = panel("Three goals, in order", "Set each goal in today’s dollars. The order matters: essentials are paid first, then lifestyle, and the legacy is whatever is left at the end.");
   const box = document.createElement("div"); box.className = "goals3"; g.appendChild(box);
   box.innerHTML = [
-    ["ess", "in-ess", "Essentials", "Must", "var(--t1)", "Housing, food, health care, insurance. The bills that arrive no matter what markets do.", "a month", 100],
-    ["life", "in-life", "Lifestyle", "Want", "var(--t2)", "Travel, gifts, help for family, the extras that make retirement yours.", "a month", 100],
+    ["ess", "in-ess", "Essentials", "Must", "var(--t1)", "Housing, food, health care and insurance: bills you pay no matter what markets do.", "a month", 100],
+    ["life", "in-life", "Lifestyle", "Want", "var(--t2)", "Travel, gifts, help for family and other extras.", "a month", 100],
     ["legacy", "in-leg", "Legacy", "Wish", "var(--t3)", "What you hope to leave at the end of the plan, in today’s dollars.", "at the end", 10000],
   ].map(([k, id, n, t, c, d, unit, step]) => `<div class="gb"><div class="gh"><span class="sw" style="background:${c}"></span><h4>${n}</h4><span class="tier">${t}</span></div>
     <p class="gd">${d}</p>
@@ -860,7 +860,7 @@ function renderFloor() {
   legend(p2, [["background:var(--ss)", "Social Security"], ["background:var(--t1)", "Essentials, locked"], ["background:repeating-linear-gradient(45deg,var(--t1) 0 1.6px,var(--paper) 1.6px 3.6px)", "Essentials, not locked"], ["background:var(--t2)", "Lifestyle, from growth"]]);
 
   // price-yield curve of the floor
-  const p3 = panel("If real yields move", `The floor’s price against a change in real yields. Today is the red dot. This curve is what bond people call duration: how many dollars the price moves for each point of yield.`);
+  const p3 = panel("If real yields move", `The floor’s price against a change in real yields. Today is the red dot. Bond investors call this duration: how many dollars the price moves for each point of yield.`);
   const H3 = 200, l3 = 64, r3 = 14, t3 = 18, b3 = 30;
   const sv = svgBox(p3, W, H3, "Cost of the floor if real yields shift");
   const shifts = []; for (let s = -2; s <= 2.001; s += 0.1) shifts.push(+s.toFixed(1));
@@ -900,7 +900,7 @@ function guideFloor() {
     <li><span>Same floor, ${dateMY(F.real10_min_date)}</span><span>${money(lockedMin, { round: 100 })}</span></li>
     <li><span>Price change per 1-point move in real yields</span><span>${(dur * 100).toFixed(1)}%</span></li>
   </ul>
-  <p class="small">Once bought, the ladder’s market value moves with rates, but each bond still pays its year in full. If you hold to maturity, rate swings change the statement, not the income.</p>`;
+  <p class="small">Once bought, the ladder’s market value moves with rates. If you hold each bond to maturity, it still pays its year in full.</p>`;
 }
 const howFloor = `<p>The floor is the part of each year’s essentials that Social Security does not cover, discounted at today’s real curve from the middle of that year. Future saving is valued the same way. Lifestyle and legacy are shown at bond prices so the three goals share one scale; in the plan they are funded from the growth portfolio instead. The rate-move curve reprices the floor with every real yield shifted by the same amount.</p>`;
 
@@ -979,7 +979,7 @@ function guideStress() {
     <li><span>Legacy reached, current mix</span><span>${A.legOK} of ${A.n}</span></li>
     <li><span>Legacy reached, floor plan</span><span>${B.legOK} of ${B.n}</span></li>
   </ul>
-  <p class="small">The worst years are not crashes alone. 1966 and 1973 pair weak stocks with a decade of inflation, which erodes bonds that do not adjust for it. The ladder’s rungs are indexed to inflation, so they hold.</p>`;
+  <p class="small">The worst start years are not only crashes. 1966 and 1973 combine weak stocks with a decade of inflation, which erodes bonds that do not adjust for it. The ladder’s bonds are indexed to inflation, so they keep their value.</p>`;
 }
 const howStress = `<p>Annual S&amp;P 500 total returns, 10-year Treasury returns and CPI inflation from 1928 to 2025 (Damodaran, NYU Stern), converted to real returns. Each start year runs your plan to age ${"${H.plan}"} using the years that followed. Current mix rebalances each year. The floor plan buys the ladder at today’s real yields, funds any unbought rungs from saving first, and invests the rest in stocks. History is one path per start year, not a forecast; overlapping windows share years.</p>`;
 
@@ -1014,7 +1014,7 @@ function renderPlan() {
     if (cut != null) lifeMoves.push(`Or plan on <b>${money(Math.max(0, H.life - Math.ceil(cut / 50) * 50))}</b> a month for lifestyle instead of ${money(H.life)}`);
     for (let r = H.retire + 1; r <= Math.min(75, H.plan - 2); r++) { const h = Object.assign({}, H, { retire: r, lockTo: Math.max(H.lockTo, r) }); if (rates(replay(h), "B").lifeOK / B.n >= target) { lifeMoves.push(`Or retire at <b>${r}</b>`); break; } }
   } else lifeMoves.push(`Lifestyle held in ${B.lifeOK} of ${B.n} histories. Keep the growth money invested; it does not need to be touched before ${H.retire}.`);
-  const legMoves = [`Reached in <b>${B.legOK} of ${B.n}</b> histories. The legacy sits last in line, so it absorbs bad markets first. That is by design.`];
+  const legMoves = [`Reached in <b>${B.legOK} of ${B.n}</b> histories. The legacy is paid last, so bad markets reduce it first.`];
   if (B.legOK / B.n < 0.5) legMoves.push(`A legacy you must leave can be locked too: ${money(H.legacy, { compact: true })} at ${H.plan} costs <b>${money(P.leg, { compact: true })}</b> today in a ${H.plan - H.age}-year TIPS`);
   const rows = [
     ["Essentials", "Must", "var(--t1)", fundEss >= 1 ? `Locked for ${money(P.locked, { compact: true })}. Paid in every history.` : `${Math.round(fundEss * 100)}% funded at today’s prices.`, essMoves],
@@ -1023,7 +1023,7 @@ function renderPlan() {
   ];
   led.innerHTML = rows.map(([n, t, c, s, m]) => `<div class="goal"><div><h4><span class="sw" style="background:${c}"></span>${n}</h4><div class="tier">${t}</div></div><div><p class="status">${s}</p><ul>${m.map(x => `<li>${x}</li>`).join("")}</ul></div></div>`).join("");
 
-  const p2 = panel("Your ladder, one coupon per year", "Old bearer bonds came with a sheet of coupons, one to clip each year. These are yours: the essentials each year of the ladder pays, in today’s dollars. Dashed coupons are years not yet locked.");
+  const p2 = panel("Your ladder, one coupon per year", "Each coupon is one year of the ladder: the essentials it pays that year, in today’s dollars. Dashed coupons are years not yet locked.");
   const cp = document.createElement("div"); cp.className = "coupons"; p2.appendChild(cp);
   const unf = Math.max(0, 1 - fundEss);
   cp.innerHTML = ages().filter(a => a >= H.retire).map(a => {
@@ -1035,7 +1035,7 @@ function guidePlan() {
   const P = prices(), B = rates(replay(), "B");
   const dur = (prices(shifted(-0.1)).locked - P.locked);
   return `
-  <p class="lead">Three goals, in order. Lock what you must have. Invest what you want. Let the wish take the risk.</p>
+  <p class="lead">The plan locks your essentials with TIPS and invests the rest in stocks for lifestyle and legacy. The legacy takes the most market risk.</p>
   <p>Your floor is priced at <b>${money(P.locked, { round: 100 })}</b> at the Treasury close of ${dateLong(F.asof)}. It moves about <b>${money(dur, { round: 100 })}</b> for every 0.1 point real yields fall.</p>
   <ul class="facts">
     <li><span>10-year real yield today</span><span>${F.real10.toFixed(2)}%</span></li>
